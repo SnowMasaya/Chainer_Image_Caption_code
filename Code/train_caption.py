@@ -92,4 +92,4 @@ class TrainCaption():
                 else:
                     batch_count = 0
                 batch_count = batch_count + 1
-        encoderDecoderModel.save()
+        encoderDecoderModel.save_model()
