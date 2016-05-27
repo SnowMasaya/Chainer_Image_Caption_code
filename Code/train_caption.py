@@ -23,6 +23,7 @@ class TrainCaption():
     def __init__(self, use_gpu, gpu_id):
         self.parameter_dict = {}
         train_path = APP_ROOT + "/../../Chainer_Image_Caption_Neural_Network/Code/Data/"
+        self.resize_image_path = train_path + "/val2014_resize/"
 
         self.parameter_dict["id2image"]         = train_path + "index2img_exclude.txt"
         self.parameter_dict["id2caption"]       = train_path + "index2caption.txt"
@@ -68,7 +69,7 @@ class TrainCaption():
         batch_count = 0
         for k, v in self.read_data.total_words_ids.items():
             if k in self.read_data.images_ids:
-                image = np.asarray(Image.open(APP_ROOT + "/" + self.read_data.images_ids[k])).transpose(2, 0, 1)[::-1]
+                image = np.asarray(Image.open(self.resize_image_path + "/" + self.read_data.images_ids[k])).transpose(2, 0, 1)[::-1]
                 image = image[:, self.start:self.stop, self.start:self.stop].astype(np.float32)
                 image -= self.mean_image
 
