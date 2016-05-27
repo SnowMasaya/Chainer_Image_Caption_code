@@ -1,0 +1,157 @@
+---
+- name: yum updates a server
+  yum: name=* state=latest
+  sudo: yes
+  tags: initial_setup
+
+- name: yum install setup
+  yum: name={{ item }} state=installed
+  with_items:
+    - curl
+    - git
+    - python-devel
+    - gcc-gfortran
+    - libmpc-devel
+    - wget
+    - gcc
+    - gcc-c++
+    - Cython
+    - make
+    - lapack-devel
+    - freetype-devel
+    - libpng-devel
+    - sudo
+    - libtiff-devel
+    - libjpeg-devel
+    - libzip-devel
+    - freetype-devel
+    - lcms2-devel
+    - libwebp-devel
+    - tcl-devel
+    - libX11-devel
+    - openssl-devel
+    - zlib-devel
+    - llvm
+    - module-init-tools
+    - python-pip
+    - libpng-devel
+    - freetype-devel
+    - pkgconfig
+    - patch
+    - readline-devel
+    ## for lxml
+    - libxml2-devel
+    - libxslt-devel
+    ## for file copy
+    - libselinux-python
+    - bzip2-devel
+  sudo: yes
+  tags: docker
+
+- name: install pyenv
+  args:
+   ## guard for only once.
+    creates: ~/.pyenv
+  shell: |
+    git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+    ## add pyenv env
+    (
+        echo 'export PYENV_ROOT=~/.pyenv'
+        echo 'export PATH=$PYENV_ROOT/bin:$PATH'
+        echo 'eval "$(pyenv init -)"'
+    ) >> ~/.bashrc
+    source ~/.bashrc
+    # install python
+    pyenv install 3.5.0
+    pyenv rehash
+    pyenv global 3.5.0
+  tags: pyenv
+
+- name: pip upgrade
+  shell: ~/.pyenv/shims/pip install --upgrade pip
+  tags: pip
+
+- name: pip easy install
+  pip: name={{ item }}
+  with_items:
+    - mako
+    - numpy
+    - cython
+  tags: pip
+
+- name: pip easy install scikit-image
+  shell: easy_install -U scikit-image
+  tags: pip
+
+- name: chainer install
+  git: repo=https://github.com/pfnet/chainer.git dest={{ home_location }}/chainer
+  tags: chainer
+
+- name: chainer setup
+  shell: CUDA_PATH=/opt/nvidia/cuda pip install chainer
+  tags: chainer
+
+- name: scikit-learn install
+  pip: name=scikit-learn
+  tags: pip
+
+- name: hdf5 yum install
+  shell: yum-config-manager --enable epel && yum install -y hdf5-devel
+  sudo: yes
+  tags: chainer
+
+- name: install h5py
+  pip: name=h5py
+  tags: pip
+
+- name: MSCOCO git clone
+  git: repo=https://github.com/pdollar/coco dest={{ home_location }}/coco
+  tags: MSCOCO
+
+- name: MSCOCO install2
+  shell: cd /home/ec2-user/coco/PythonAPI/ && /home/ec2-user/.pyenv/shims/python setup.py install
+  sudo: yes
+  tags: MSCOCO
+
+- name: MSCOCO 2to3
+  shell: /home/ec2-user/.pyenv/shims/2to3 -w /home/ec2-user/.pyenv/versions/3.5.0/lib/python3.5/site-packages/pycocotools/*.py
+  sudo: yes
+  tags: MSCOCO
+
+- name: "git clone Chainer Image Caption"
+  git: repo=https://github.com/SnowMasaya/Chainer_Image_Caption_Neural_Network.git dest={{ chainer_image_caption_location }}
+  sudo: yes
+  tags: chainer
+
+#- name: Get MS COCO Data images
+#  get_url: url={{ item }} dest={{ chainer_image_caption_location }}/Code/Data
+#  with_items:
+#  - http://msvocds.blob.core.windows.net/coco2014/val2014.zip
+#  - http://msvocds.blob.core.windows.net/annotations-1-0-3/instances_train-val2014.zip
+#  - http://msvocds.blob.core.windows.net/annotations-1-0-3/captions_train-val2014.zip
+#  sudo: yes
+#  tags: MS COCO
+
+#- name: Unzip MS COCO Data
+#  shell: cd {{ chainer_image_caption_location }}/Code/Data && unzip {{ item }}
+#  with_items:
+#  - captions_train-val2014.zip
+#  - instances_train-val2014.zip
+#  - val2014.zip
+#  sudo: yes
+#  tags: MS COCO
+
+#- name: Delete MS COCO Data
+#  shell: cd {{ chainer_image_caption_location }}/Code/Data && rm -f *.zip
+#  sudo: yes
+#  tags: MS COCO
+
+- name: change file owner
+  shell: cd {{ chainer_image_caption_location }} && chown -R ec2-user *
+  sudo: yes
+  tags: MS COCO
+
+- name: make resize image
+  shell: mkdir -p {{ chainer_image_caption_location }}/Code/Data/val2014_resize && /home/ec2-user/.pyenv/shims/python {{ chainer_image_caption_location }}/Code/execute/execute_resize_image.py
+  sudo: yes
+  tags: MS COCO

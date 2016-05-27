@@ -1,0 +1,3 @@
+---
+home_location: "/home/ec2-user/"
+chainer_image_caption_location: "/home/ec2-user/Chainer_Image_Caption_Neural_Network/"

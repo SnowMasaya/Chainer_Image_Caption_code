@@ -1,0 +1,64 @@
+---
+- name: yum updates a server
+  yum: name=* state=latest
+  sudo: yes
+  tags: initial_setup
+
+- name: yum install setup
+  shell: yum install curl
+  sudo: yes
+  tags: docker
+
+- name: yum install docker-engine
+  shell: curl -sSL https://get.docker.com/ | sh
+  sudo: yes
+  tags: docker
+
+- name: usermod -aG docker ec2-user
+  shell: usermod -aG docker ec2-user
+  sudo: yes
+  tags: docker
+
+- name: download docker compose
+  shell: curl -L https://github.com/docker/compose/releases/download/1.6.2/docker-compose-`uname -s`-`uname -m` > docker-compose
+  tags: docker
+
+- name: chmod +x docker-compose
+  shell: chmod +x docker-compose && mv docker-compose /usr/local/bin/docker-compose
+  sudo: yes
+  tags: nvidia
+
+- name: "git install "
+  shell: yum install -y git
+  sudo: yes
+  tags: nvidia
+
+- name: "git clone nvidia "
+  shell: git clone https://github.com/NVIDIA/nvidia-docker
+  sudo: yes
+  tags: nvidia
+
+- name: "docker start"
+  shell: service docker start
+  sudo: yes
+  tags: nvidia
+
+- name: "nvidia install"
+  shell: make install chdir=/home/ec2-user/nvidia-docker
+  sudo: yes
+  tags: nvidia
+
+- name: "nvidia install2"
+  shell: nvidia-docker volume setup chdir=/home/ec2-user/nvidia-docker
+  sudo: yes
+  tags: nvidia
+
+- name: "nvidia install3"
+  shell: nvidia-docker run nvidia/cuda nvidia-smi chdir=/home/ec2-user/nvidia-docker
+  sudo: yes
+  tags: nvidia
+
+- name: "git clone Chainer Image Caption"
+  shell: git clone https://github.com/SnowMasaya/Chainer_Image_Caption_Neural_Network.git
+  sudo: yes
+  tags: nvidia

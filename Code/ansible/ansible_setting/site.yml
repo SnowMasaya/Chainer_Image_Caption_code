@@ -1,0 +1,6 @@
+---
+- name: apply development to all nodes
+  hosts: default 
+  remote_user: ec2-user
+  roles:
+  - development
