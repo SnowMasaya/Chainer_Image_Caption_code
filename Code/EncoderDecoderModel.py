@@ -100,7 +100,7 @@ class EncoderDecoderModel:
                 self.batch_size = len(self.trg_batch)
                 self.trg_len = len(self.trg_batch[0]) if self.trg_batch else 0
                 self.encdec.clear(self.batch_size)
-                self.__forward_img(True)
+                self.__forward_img()
                 self.encdec.reset(self.batch_size)
                 loss, hyp_batch = self.__forward_word(trg_batch, trg_vocab, encdec, True, 0)
                 loss.backward()
