@@ -23,7 +23,7 @@ class TrainCaption():
     def __init__(self, use_gpu, gpu_id):
         self.parameter_dict = {}
         train_path = APP_ROOT + "/../../Chainer_Image_Caption_Neural_Network/Code/Data/"
-        self.resize_image_path = train_path + "/val2014_resize/"
+        self.resize_image_path = APP_ROOT + "/../../Chainer_Image_Caption_Neural_Network/Code/"
 
         self.parameter_dict["id2image"]         = train_path + "index2img_exclude.txt"
         self.parameter_dict["id2caption"]       = train_path + "index2caption.txt"
