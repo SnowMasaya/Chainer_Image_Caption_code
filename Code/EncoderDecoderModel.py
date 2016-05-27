@@ -109,7 +109,7 @@ class EncoderDecoderModel:
 
         trace('saving model ...')
         prefix = self.model
-        self.trg_vocab.save("model/" + prefix + '.trgvocab')
+        trg_vocab.save("model/" + prefix + '.trgvocab')
         self.encdec.save_spec("model/" + prefix + '.spec')
         serializers.save_hdf5("model/" + prefix + '.weights', self.encdec)
 
