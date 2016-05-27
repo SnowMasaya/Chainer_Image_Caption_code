@@ -51,9 +51,9 @@ class EncoderDecoderModel:
         x = XP.farray(self.id2image.data)
         return self.encdec.encode(x)
 
-    def __forward_word(self, trg_batch, trg_vocab, encdec, is_training, generation_limit):
-        trg_stoi = trg_vocab.stoi
-        trg_itos = trg_vocab.itos
+    def __forward_word(self, trg_batch, encdec, is_training, generation_limit):
+        trg_stoi = self.trg_vocab.stoi
+        trg_itos = self.trg_vocab.itos
         t = XP.iarray([trg_stoi('<s>') for _ in range(self.batch_size)])
         hyp_batch = [[] for _ in range(self.batch_size)]
         trg_len = len(trg_batch[0]) if trg_batch else 0
@@ -81,7 +81,7 @@ class EncoderDecoderModel:
 
     def train(self):
         trace('making vocabularies ...')
-        trg_vocab = Vocabulary.new(gens.word_list(self.target), self.vocab)
+        self.trg_vocab = Vocabulary.new(gens.word_list(self.target), self.vocab)
 
         trace('making model ...')
 
@@ -101,15 +101,16 @@ class EncoderDecoderModel:
                 self.encdec.clear(self.batch_size)
                 self.__forward_img()
                 self.encdec.reset(self.batch_size)
-                loss, hyp_batch = self.__forward_word(self.trg_batch, trg_vocab, self.encdec, True, 0)
+                loss, hyp_batch = self.__forward_word(self.trg_batch, self.encdec, True, 0)
                 loss.backward()
                 opt.update()
                 K = len(self.trg_batch) - 2
                 self.print_out(K, hyp_batch, epoch)
 
+    def save_model(self):
         trace('saving model ...')
         prefix = self.model
-        trg_vocab.save("model/" + prefix + '.trgvocab')
+        self.trg_vocab.save("model/" + prefix + '.trgvocab')
         self.encdec.save_spec("model/" + prefix + '.spec')
         serializers.save_hdf5("model/" + prefix + '.weights', self.encdec)
 
@@ -128,7 +129,7 @@ class EncoderDecoderModel:
         with open(self.target, 'w') as fp:
             self.__forward_img()
             trace('sample %8d ...' % (generated + 1))
-            hyp_batch = self.__forward_word(self.trg_batch, trg_vocab, encdec, False, self.generation_limit)
+            hyp_batch = self.__forward_word(self.trg_batch, encdec, False, self.generation_limit)
 
             for hyp in hyp_batch:
                 hyp.append('</s>')
