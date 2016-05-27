@@ -117,10 +117,10 @@ class EncoderDecoderModel:
 
     def test(self):
         trace('loading model ...')
-        self.trg_vocab = Vocabulary.load(self.model + '.trgvocab')
+        self.trg_vocab = Vocabulary.load("model/" + self.model + '.trgvocab')
         self.batch_size = len(trg_batch)
-        encdec = EncoderDecoder.load_spec(self.model + '.spec')
-        serializers.load_hdf5(self.model + '.weights', encdec)
+        encdec = EncoderDecoder.load_spec("model/" + self.model + '.spec')
+        serializers.load_hdf5("model/" + self.model + '.weights', encdec)
 
         trace('generating translation ...')
         generated = 0
