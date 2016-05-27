@@ -67,6 +67,7 @@ class TrainCaption():
             cuda.check_cuda_available()
         xp = cuda.cupy if self.parameter_dict["gpu_id"] >= 0 and self.parameter_dict["use_gpu"] == True else np
         batch_count = 0
+        encoderDecoderModel = EncoderDecoderModel(self.parameter_dict)
         for k, v in self.read_data.total_words_ids.items():
             if k in self.read_data.images_ids:
                 image = np.asarray(Image.open(self.resize_image_path + "/" + self.read_data.images_ids[k])).transpose(2, 0, 1)[::-1]
@@ -75,13 +76,18 @@ class TrainCaption():
 
                 self.x_batch[batch_count] = image
                 self.y_batch[batch_count] = self.trg_vocab.stoi(self.read_data.total_words_ids[k].split()[0])
-                x_data = xp.asarray(self.x_batch)
-                y_data = xp.asarray(self.y_batch)
-                batch_count = batch_count + 1
 
-        x = chainer.Variable(x_data, volatile=True)
-        t = chainer.Variable(y_data, volatile=True)
-        self.parameter_dict["x"] = x
-        self.parameter_dict["first_word"] = t
-        encoderDecoderModel = EncoderDecoderModel(self.parameter_dict)
-        encoderDecoderModel.train()
+                if batch_count < self.parameter_dict["minibatch"]:
+                    x_data = xp.asarray(self.x_batch)
+                    y_data = xp.asarray(self.y_batch)
+                    x = chainer.Variable(x_data, volatile=True)
+                    t = chainer.Variable(y_data, volatile=True)
+                    self.parameter_dict["x"] = x
+                    self.parameter_dict["first_word"] = t
+                    encoderDecoderModel.id2image = x
+                    encoderDecoderModel.first_word = t
+                    encoderDecoderModel.train()
+                else:
+                    batch_count = 0
+                batch_count = batch_count + 1
+        encoderDecoderModel.save()
