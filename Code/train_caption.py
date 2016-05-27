@@ -67,6 +67,8 @@ class TrainCaption():
             cuda.check_cuda_available()
         xp = cuda.cupy if self.parameter_dict["gpu_id"] >= 0 and self.parameter_dict["use_gpu"] == True else np
         batch_count = 0
+        self.parameter_dict["x"] = []
+        self.parameter_dict["first_word"] = []
         encoderDecoderModel = EncoderDecoderModel(self.parameter_dict)
         for k, v in self.read_data.total_words_ids.items():
             if k in self.read_data.images_ids:
