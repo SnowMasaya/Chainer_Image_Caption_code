@@ -140,6 +140,10 @@ class EncoderDecoderModel:
 
 
     def print_out(self, K, hyp_batch, epoch):
+        if len(self.trg_batch) - 1 < K:
+            K = len(self.trg_batch) - 1
+        if len(hyp_batch) - 1 < K:
+            K = len(hyp_batch) - 1
 
         trace('epoch %3d/%3d, sample %8d' % (epoch, self.epoch, K + 1))
         # trace('epoch %3d/%3d, sample %8d' % (i_epoch + 1, self.epoch, trained + 1))
