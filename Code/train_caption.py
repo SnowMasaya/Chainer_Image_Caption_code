@@ -79,7 +79,7 @@ class TrainCaption():
                 self.x_batch[batch_count] = image
                 self.y_batch[batch_count] = self.trg_vocab.stoi(self.read_data.total_words_ids[k].split()[0])
 
-                if batch_count >= self.parameter_dict["minibatch"]:
+                if batch_count == self.parameter_dict["minibatch"] - 1:
                     x_data = xp.asarray(self.x_batch)
                     y_data = xp.asarray(self.y_batch)
                     x = chainer.Variable(x_data, volatile=True)
