@@ -61,7 +61,7 @@ class EncoderDecoderModel:
             loss = XP.fzeros(())
             for l in range(trg_len):
                 y = encdec.decode(t)
-                t = XP.iarray([trg_stoi(self.trg_batch[k][l]) for k in range(self.batch_size)])
+                t = XP.iarray([trg_stoi(trg_batch[k][l]) for k in range(self.batch_size)])
                 loss += functions.softmax_cross_entropy(y, t)
                 output = cuda.to_cpu(y.data.argmax(1))
                 for k in range(self.batch_size):
@@ -69,12 +69,12 @@ class EncoderDecoderModel:
             return loss, hyp_batch
         else:
             while len(hyp_batch[0]) < generation_limit:
-                y = self.encdec.decode(t)
+                y = encdec.decode(t)
                 output = cuda.to_cpu(y.data.argmax(1))
                 t = self.common_function.my_array(output, np.int32)
-                for k in range(batch_size):
+                for k in range(self.batch_size):
                     hyp_batch[k].append(trg_itos(output[k]))
-                if all(hyp_batch[k][-1] == '</s>' for k in range(batch_size)):
+                if all(hyp_batch[k][-1] == '</s>' for k in range(self.batch_size)):
                     break
 
         return hyp_batch
@@ -94,18 +94,17 @@ class EncoderDecoderModel:
             gen = gens.batch(gen1, self.minibatch)
 
             for trg_batch in gen:
-                self.trg_batch = fill_batch(trg_batch)
-                if len(self.trg_batch) != self.minibatch:
+                self.batch_size = len(trg_batch)
+                trg_batch = fill_batch(trg_batch)
+                if len(trg_batch) != self.minibatch:
                     break
-                self.batch_size = len(self.trg_batch)
-                self.trg_len = len(self.trg_batch[0]) if self.trg_batch else 0
                 self.encdec.clear(self.batch_size)
                 self.__forward_img()
                 self.encdec.reset(self.batch_size)
-                loss, hyp_batch = self.__forward_word(trg_batch, trg_vocab, encdec, True, 0)
+                loss, hyp_batch = self.__forward_word(trg_batch, trg_vocab, self.encdec, True, 0)
                 loss.backward()
                 opt.update()
-                K = len(self.trg_batch) - 2
+                K = len(trg_batch) - 2
             self.print_out(K, hyp_batch, epoch)
 
         trace('saving model ...')
@@ -119,6 +118,7 @@ class EncoderDecoderModel:
     def test(self):
         trace('loading model ...')
         self.trg_vocab = Vocabulary.load(self.model + '.trgvocab')
+        self.batch_size = len(trg_batch)
         encdec = EncoderDecoder.load_spec(self.model + '.spec')
         serializers.load_hdf5(self.model + '.weights', encdec)
 
@@ -126,11 +126,9 @@ class EncoderDecoderModel:
         generated = 0
 
         with open(self.target, 'w') as fp:
-            self.encdec.clear(self.batch_size)
             self.__forward_img()
-            self.encdec.reset(self.batch_size)
             trace('sample %8d ...' % (generated + 1))
-            hyp_batch = self.__forward_word(trg_batch, trg_vocab, encdec, False, self.generation_limit)
+            hyp_batch = self.__forward_word(self.trg_batch, trg_vocab, encdec, False, self.generation_limit)
 
             for hyp in hyp_batch:
                 hyp.append('</s>')
