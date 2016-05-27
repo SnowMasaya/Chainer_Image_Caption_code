@@ -105,7 +105,7 @@ class EncoderDecoderModel:
                 loss.backward()
                 opt.update()
                 K = len(trg_batch) - 2
-            self.print_out(K, hyp_batch, epoch)
+                self.print_out(K, hyp_batch, epoch)
 
         trace('saving model ...')
         prefix = self.model
