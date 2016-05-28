@@ -70,25 +70,26 @@ class TrainCaption():
         self.parameter_dict["x"] = []
         self.parameter_dict["first_word"] = []
         encoderDecoderModel = EncoderDecoderModel(self.parameter_dict)
-        for k, v in self.read_data.total_words_ids.items():
-            if k in self.read_data.images_ids:
-                image = np.asarray(Image.open(self.resize_image_path + "/" + self.read_data.images_ids[k])).transpose(2, 0, 1)[::-1]
-                image = image[:, self.start:self.stop, self.start:self.stop].astype(np.float32)
-                image -= self.mean_image
+        for epoch in self.parameter_dict["epoch"]:
+            for k, v in self.read_data.total_words_ids.items():
+                if k in self.read_data.images_ids:
+                    image = np.asarray(Image.open(self.resize_image_path + "/" + self.read_data.images_ids[k])).transpose(2, 0, 1)[::-1]
+                    image = image[:, self.start:self.stop, self.start:self.stop].astype(np.float32)
+                    image -= self.mean_image
 
-                self.x_batch[batch_count] = image
-                self.y_batch[batch_count] = self.trg_vocab.stoi(self.read_data.total_words_ids[k].split()[0])
+                    self.x_batch[batch_count] = image
+                    self.y_batch[batch_count] = self.trg_vocab.stoi(self.read_data.total_words_ids[k].split()[0])
 
-                if batch_count == self.parameter_dict["minibatch"] - 1:
-                    x_data = xp.asarray(self.x_batch)
-                    y_data = xp.asarray(self.y_batch)
-                    x = chainer.Variable(x_data, volatile=True)
-                    t = chainer.Variable(y_data, volatile=True)
-                    self.parameter_dict["x"] = x
-                    self.parameter_dict["first_word"] = t
-                    encoderDecoderModel.id2image = x
-                    encoderDecoderModel.first_word = t
-                    encoderDecoderModel.train()
+                    if batch_count == self.parameter_dict["minibatch"] - 1:
+                        x_data = xp.asarray(self.x_batch)
+                        y_data = xp.asarray(self.y_batch)
+                        x = chainer.Variable(x_data, volatile=True)
+                        t = chainer.Variable(y_data, volatile=True)
+                        self.parameter_dict["x"] = x
+                        self.parameter_dict["first_word"] = t
+                        encoderDecoderModel.id2image = x
+                        encoderDecoderModel.first_word = t
+                        encoderDecoderModel.train(epoch)
                     batch_count = 0
                 batch_count = batch_count + 1
         encoderDecoderModel.save_model()

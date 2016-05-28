@@ -25,7 +25,6 @@ class EncoderDecoderModel:
         self.vocab            = parameter_dict["vocab"]
         self.embed            = parameter_dict["embed"]
         self.hidden           = parameter_dict["hidden"]
-        self.epoch            = parameter_dict["epoch"]
         self.minibatch        = parameter_dict["minibatch"]
         self.generation_limit = parameter_dict["generation_limit"]
         self.use_gpu          = parameter_dict["use_gpu"]
@@ -79,33 +78,32 @@ class EncoderDecoderModel:
 
         return hyp_batch
 
-    def train(self):
+    def train(self, epoch):
         trace('making vocabularies ...')
         self.trg_vocab = Vocabulary.new(gens.word_list(self.target), self.vocab)
 
         trace('making model ...')
 
-        for epoch in range(self.epoch):
-            trace('epoch %d/%d: ' % (epoch + 1, self.epoch))
-            opt = optimizers.AdaGrad(lr=0.01)
-            opt.setup(self.encdec)
-            opt.add_hook(optimizer.GradientClipping(5))
-            gen1 = gens.word_list(self.target)
-            gen = gens.batch(gen1, self.minibatch)
+        trace('epoch %d/%d: ' % (epoch + 1, self.epoch))
+        opt = optimizers.AdaGrad(lr=0.01)
+        opt.setup(self.encdec)
+        opt.add_hook(optimizer.GradientClipping(5))
+        gen1 = gens.word_list(self.target)
+        gen = gens.batch(gen1, self.minibatch)
 
-            for trg_batch in gen:
-                self.batch_size = len(trg_batch)
-                self.trg_batch = fill_batch(trg_batch)
-                if len(trg_batch) != self.minibatch:
-                    break
-                self.encdec.clear(self.batch_size)
-                self.__forward_img()
-                self.encdec.reset(self.batch_size)
-                loss, hyp_batch = self.__forward_word(self.trg_batch, self.encdec, True, 0)
-                loss.backward()
-                opt.update()
-                K = len(self.trg_batch) - 2
-                self.print_out(K, hyp_batch, epoch)
+        for trg_batch in gen:
+            self.batch_size = len(trg_batch)
+            self.trg_batch = fill_batch(trg_batch)
+            if len(trg_batch) != self.minibatch:
+                break
+            self.encdec.clear(self.batch_size)
+            self.__forward_img()
+            self.encdec.reset(self.batch_size)
+            loss, hyp_batch = self.__forward_word(self.trg_batch, self.encdec, True, 0)
+            loss.backward()
+            opt.update()
+            K = len(self.trg_batch) - 2
+            self.print_out(K, hyp_batch, epoch)
 
     def save_model(self):
         trace('saving model ...')
