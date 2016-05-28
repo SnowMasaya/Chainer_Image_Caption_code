@@ -70,7 +70,7 @@ class TrainCaption():
         self.parameter_dict["x"] = []
         self.parameter_dict["first_word"] = []
         encoderDecoderModel = EncoderDecoderModel(self.parameter_dict)
-        for epoch in self.parameter_dict["epoch"]:
+        for epoch in range(self.parameter_dict["epoch"]):
             for k, v in self.read_data.total_words_ids.items():
                 if k in self.read_data.images_ids:
                     try:
