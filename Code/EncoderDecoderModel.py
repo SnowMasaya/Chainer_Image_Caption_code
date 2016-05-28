@@ -24,6 +24,7 @@ class EncoderDecoderModel:
         self.target           = parameter_dict["target"]
         self.vocab            = parameter_dict["vocab"]
         self.embed            = parameter_dict["embed"]
+        self.epoch            = parameter_dict["epoch"]
         self.hidden           = parameter_dict["hidden"]
         self.minibatch        = parameter_dict["minibatch"]
         self.generation_limit = parameter_dict["generation_limit"]
