@@ -74,7 +74,7 @@ class TrainCaption():
             for k, v in self.read_data.total_words_ids.items():
                 if k in self.read_data.images_ids:
                     try:
-                        self.__get_data(k)
+                        self.__get_data(k, batch_count)
                         if batch_count == self.parameter_dict["minibatch"] - 1:
                             self.__call_miniatch_train(encoderDecoderModel, epoch)
                         batch_count = 0
@@ -84,7 +84,7 @@ class TrainCaption():
                 batch_count = batch_count + 1
         encoderDecoderModel.save_model()
 
-    def __get_data(self, k):
+    def __get_data(self, k, batch_count):
         """
         Get the image data and caption
         :param k: image data index
