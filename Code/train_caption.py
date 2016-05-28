@@ -63,9 +63,6 @@ class TrainCaption():
         self.read_data.load_caption_list()
 
     def train(self):
-        if self.parameter_dict["use_gpu"]:
-            cuda.check_cuda_available()
-        xp = cuda.cupy if self.parameter_dict["gpu_id"] >= 0 and self.parameter_dict["use_gpu"] == True else np
         batch_count = 0
         self.parameter_dict["x"] = []
         self.parameter_dict["first_word"] = []
@@ -102,6 +99,9 @@ class TrainCaption():
         :param encoderDecoderModel:
         :param epoch:
         """
+        if self.parameter_dict["use_gpu"]:
+            cuda.check_cuda_available()
+        xp = cuda.cupy if self.parameter_dict["gpu_id"] >= 0 and self.parameter_dict["use_gpu"] == True else np
         x_data = xp.asarray(self.x_batch)
         y_data = xp.asarray(self.y_batch)
         x = chainer.Variable(x_data, volatile=True)
