@@ -77,7 +77,7 @@ class TrainCaption():
                         self.__get_data(k, batch_count)
                         if batch_count == self.parameter_dict["minibatch"] - 1:
                             self.__call_miniatch_train(encoderDecoderModel, epoch)
-                        batch_count = 0
+                            batch_count = 0
                     except ValueError as e:
                         print(str(e))
                         continue
